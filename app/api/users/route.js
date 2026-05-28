@@ -50,6 +50,7 @@ export async function POST(request) {
     )
   } catch (err) {
     console.error('POST /api/users:', err.message)
-    return Response.json({ error: 'Internal server error' }, { status: 500 })
+    // Temporary: expose real error for debugging — revert after fix
+    return Response.json({ error: err.message }, { status: 500 })
   }
 }
