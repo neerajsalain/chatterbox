@@ -2,7 +2,7 @@ services:
   - type: web
     name: chatterbox
     runtime: node
-    buildCommand: npm install --legacy-peer-deps && npm run build
+    buildCommand: npm install && npm run build
     startCommand: node server.js
     healthCheckPath: /api/health
 
