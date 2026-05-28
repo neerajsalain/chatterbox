@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /api/
+Disallow: /chat/
+Allow: /login
+Allow: /register

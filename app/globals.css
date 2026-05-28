@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+/* ─── Dark theme (default) ─────────────────────────────── */
+@theme {
+  --color-primary: oklch(62% 0.19 264);
+  --color-primary-hover: oklch(55% 0.22 264);
+  --color-primary-foreground: oklch(98% 0 0);
+
+  --color-surface-0: oklch(16% 0.02 264);
+  --color-surface-1: oklch(20% 0.02 264);
+  --color-surface-2: oklch(24% 0.02 264);
+  --color-border: oklch(30% 0.03 264);
+
+  --color-text: oklch(92% 0.01 264);
+  --color-text-muted: oklch(65% 0.02 264);
+  --color-text-subtle: oklch(45% 0.02 264);
+
+  --color-online: oklch(72% 0.2 145);
+  --color-away: oklch(78% 0.18 75);
+  --color-offline: oklch(50% 0.01 264);
+
+  --color-bubble-sent: oklch(62% 0.19 264);
+  --color-bubble-received: oklch(24% 0.02 264);
+
+  --color-read: oklch(62% 0.19 264);
+  --color-sent: oklch(55% 0.01 264);
+
+  --sidebar-width: 280px;
+  --header-height: 60px;
+}
+
+/* ─── Light theme override ──────────────────────────────── */
+[data-theme="light"] {
+  --color-primary: oklch(52% 0.22 264);
+  --color-primary-hover: oklch(46% 0.24 264);
+  --color-primary-foreground: oklch(99% 0 0);
+
+  --color-surface-0: oklch(95% 0.005 264);
+  --color-surface-1: oklch(100% 0 0);
+  --color-surface-2: oklch(93% 0.007 264);
+  --color-border: oklch(86% 0.012 264);
+
+  --color-text: oklch(14% 0.02 264);
+  --color-text-muted: oklch(42% 0.02 264);
+  --color-text-subtle: oklch(62% 0.015 264);
+
+  --color-online: oklch(55% 0.22 145);
+  --color-away: oklch(62% 0.2 75);
+  --color-offline: oklch(70% 0.01 264);
+
+  --color-bubble-sent: oklch(52% 0.22 264);
+  --color-bubble-received: oklch(93% 0.007 264);
+
+  --color-read: oklch(52% 0.22 264);
+  --color-sent: oklch(65% 0.01 264);
+}
+
+/* ─── Base ──────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--color-surface-0);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ─── Thin scrollbar ────────────────────────────────────── */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 2px;
+}
+
+/* ─── Emoji picker dark/light theming ───────────────────── */
+em-emoji-picker {
+  --border-radius: 12px;
+  --shadow: none;
+  height: 360px;
+}

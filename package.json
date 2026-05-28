@@ -1,0 +1,45 @@
+{
+  "name": "realtime-chat-app",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "nodemon server.js",
+    "build": "next build",
+    "start": "node server.js",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@auth/mongodb-adapter": "^3.0.0",
+    "@emoji-mart/data": "^1.2.0",
+    "@emoji-mart/react": "^1.1.1",
+    "@tailwindcss/postcss": "^4.3.0",
+    "axios": "^1.7.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.0.0",
+    "date-fns": "^3.6.0",
+    "emoji-mart": "^5.6.0",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "mongodb": "^6.0.0",
+    "mongoose": "^8.0.0",
+    "next": "^16.0.0",
+    "next-auth": "5.0.0-beta.31",
+    "postcss": "^8.5.15",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.4.1",
+    "socket.io": "^4.7.0",
+    "socket.io-client": "^4.7.0",
+    "tailwindcss": "^4.3.0",
+    "zod": "^3.22.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^16.0.0",
+    "nodemon": "^3.1.0"
+  }
+}

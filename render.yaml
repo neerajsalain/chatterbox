@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: chatterbox
+    runtime: node
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: node server.js
+    healthCheckPath: /api/health
+
+    # Render will auto-detect the PORT env var and inject it
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # ── NextAuth v5 ──────────────────────────────────────
+      # AUTH_SECRET: run `openssl rand -base64 32` to generate
+      - key: AUTH_SECRET
+        sync: false
+      # AUTH_URL: your Render app URL, e.g. https://chatterbox-xxxx.onrender.com
+      - key: AUTH_URL
+        sync: false
+      - key: AUTH_TRUST_HOST
+        value: "true"
+
+      # ── MongoDB Atlas ────────────────────────────────────
+      - key: MONGODB_URI
+        sync: false
+
+      # ── Cloudinary ───────────────────────────────────────
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+        sync: false
+
+      # ── Socket.io ────────────────────────────────────────
+      # Set to your Render app URL after first deploy
+      # e.g. https://chatterbox-xxxx.onrender.com
+      - key: NEXT_PUBLIC_SOCKET_URL
+        sync: false
