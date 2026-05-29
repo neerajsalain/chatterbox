@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { formatMessageTime } from '@/utils/formatTime'
 import Avatar from '@/components/shared/Avatar'
@@ -121,8 +123,8 @@ export default function MessageBubble({ message, isOwn, showAvatar, myId, onDele
   if (isOwn) {
     return (
       <div className="flex justify-end mb-1 group">
-        {/* Delete button — visible on hover, left of the bubble */}
-        <div className="self-center mr-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Delete button — always visible on mobile, hover-only on desktop */}
+        <div className="self-center mr-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <DeleteButton onDelete={() => onDelete?.(String(message._id))} isOwn />
         </div>
 
