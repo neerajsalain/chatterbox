@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { auth } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import Conversation from '@/models/Conversation'
@@ -10,17 +11,26 @@ export async function GET(_req, { params }) {
 
   const { id } = await params
 
-  await connectDB()
-
-  const conv = await Conversation.findById(id)
-    .populate('participants', 'name image status lastSeen')
-    .lean()
-
-  if (!conv) return Response.json({ error: 'Not found' }, { status: 404 })
-
-  if (!conv.participants.some((p) => String(p._id) === session.user.id)) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 })
+  if (!mongoose.isValidObjectId(id)) {
+    return Response.json({ error: 'Invalid conversation ID' }, { status: 400 })
   }
 
-  return Response.json(conv)
+  try {
+    await connectDB()
+
+    const conv = await Conversation.findById(id)
+      .populate('participants', 'name image status lastSeen')
+      .lean()
+
+    if (!conv) return Response.json({ error: 'Not found' }, { status: 404 })
+
+    if (!conv.participants.some((p) => String(p._id) === session.user.id)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    return Response.json(conv)
+  } catch (err) {
+    console.error('GET /api/conversations/[id]:', err)
+    return Response.json({ error: 'Failed to load conversation' }, { status: 500 })
+  }
 }

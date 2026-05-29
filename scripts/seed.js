@@ -1,10 +1,8 @@
 /**
  * Seed script — run once after first deploy to create default rooms.
- * Usage:  node scripts/seed.js
- * Requires MONGODB_URI in .env.local (locally) or environment (on Render).
+ * Usage:  node --env-file=.env.local scripts/seed.js
+ * Node 20.6+ built-in --env-file flag loads .env.local automatically — no dotenv package needed.
  */
-
-require('dotenv').config({ path: '.env.local' })
 
 const mongoose = require('mongoose')
 const User = require('../models/User')

@@ -8,7 +8,12 @@ export async function POST(request) {
   const session = await auth()
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const formData = await request.formData()
+  let formData
+  try {
+    formData = await request.formData()
+  } catch {
+    return Response.json({ error: 'Invalid form data' }, { status: 400 })
+  }
   const file = formData.get('file')
 
   if (!file || typeof file === 'string') {

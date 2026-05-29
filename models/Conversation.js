@@ -11,8 +11,8 @@ const conversationSchema = new mongoose.Schema(
         },
       ],
       validate: {
-        validator: (arr) => arr.length === 2,
-        message: 'A conversation must have exactly 2 participants',
+        validator: (arr) => arr.length === 2 && arr[0].toString() !== arr[1].toString(),
+        message: 'A conversation must have exactly 2 distinct participants',
       },
     },
     lastMessage: {

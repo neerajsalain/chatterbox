@@ -16,7 +16,10 @@ const allowedOrigin = dev
 const app = next({ dev, port })
 const handle = app.getRequestHandler()
 
-app.prepare().then(() => {
+app.prepare().catch((err) => {
+  console.error('Failed to start Next.js:', err)
+  process.exit(1)
+}).then(() => {
   const httpServer = createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url, true)

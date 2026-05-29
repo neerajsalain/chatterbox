@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const { setIO } = require('../lib/socket')
 const registerChatEvents = require('./chatEvents')
 const registerPresenceEvents = require('./presenceEvents')
@@ -13,6 +14,7 @@ function registerSocketHandlers(io) {
   io.use((socket, next) => {
     const userId = socket.handshake.auth?.userId
     if (!userId) return next(new Error('Unauthorized: missing userId'))
+    if (!mongoose.Types.ObjectId.isValid(userId)) return next(new Error('Unauthorized: invalid userId'))
     socket.userId = userId
     next()
   })

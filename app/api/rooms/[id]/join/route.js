@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { auth } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import Room from '@/models/Room'
@@ -10,13 +11,22 @@ export async function POST(_req, { params }) {
 
   const { id } = await params
 
-  await connectDB()
+  if (!mongoose.isValidObjectId(id)) {
+    return Response.json({ error: 'Invalid room ID' }, { status: 400 })
+  }
 
-  const room = await Room.findById(id)
-  if (!room) return Response.json({ error: 'Room not found' }, { status: 404 })
-  if (room.isPrivate) return Response.json({ error: 'Cannot join a private room directly' }, { status: 403 })
+  try {
+    await connectDB()
 
-  await Room.findByIdAndUpdate(id, { $addToSet: { members: session.user.id } })
+    const room = await Room.findById(id)
+    if (!room) return Response.json({ error: 'Room not found' }, { status: 404 })
+    if (room.isPrivate) return Response.json({ error: 'Cannot join a private room directly' }, { status: 403 })
 
-  return Response.json({ success: true })
+    await Room.findByIdAndUpdate(id, { $addToSet: { members: session.user.id } })
+
+    return Response.json({ success: true })
+  } catch (err) {
+    console.error('POST /api/rooms/[id]/join:', err)
+    return Response.json({ error: 'Failed to join room' }, { status: 500 })
+  }
 }
