@@ -112,6 +112,39 @@ function registerChatEvents(io, socket) {
     }
   })
 
+  // ── Clear chat ────────────────────────────────────────────────────────────
+  socket.on('clear_chat', async ({ targetId, targetType }) => {
+    if (!targetId || !isValidId(targetId)) {
+      return socket.emit('error', { message: 'Invalid target ID' })
+    }
+    try {
+      await connectDB()
+
+      if (targetType === 'conversation') {
+        const conv = await Conversation.findById(targetId).select('participants').lean()
+        if (!conv) return socket.emit('error', { message: 'Conversation not found' })
+        if (!conv.participants.some((p) => p.toString() === socket.userId)) {
+          return socket.emit('error', { message: 'Not a participant' })
+        }
+        await Message.updateMany({ conversation: targetId }, { deleted: true, deletedAt: new Date() })
+      } else {
+        const Room = require('../models/Room')
+        const room = await Room.findById(targetId).select('admin members').lean()
+        if (!room) return socket.emit('error', { message: 'Room not found' })
+        // Only admin or members can clear
+        const isMember = room.members.some((m) => m.toString() === socket.userId)
+        if (!isMember) return socket.emit('error', { message: 'Not a member' })
+        await Message.updateMany({ room: targetId }, { deleted: true, deletedAt: new Date() })
+      }
+
+      const channel = targetType === 'conversation' ? `conv:${targetId}` : `room:${targetId}`
+      io.to(channel).emit('chat_cleared', { targetId })
+    } catch (err) {
+      console.error('clear_chat error:', err.message)
+      socket.emit('error', { message: 'Failed to clear chat' })
+    }
+  })
+
   // ── Mark read ──────────────────────────────────────────────────────────────
   socket.on('mark_read', async ({ messageId }) => {
     if (!messageId || !isValidId(messageId)) return

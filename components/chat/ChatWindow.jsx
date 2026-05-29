@@ -28,6 +28,9 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
   const [loadError, setLoadError] = useState(false)
   const [headerInfo, setHeaderInfo] = useState(null)
   const [typingUsers, setTypingUsers] = useState([])
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
+  const [clearConfirm, setClearConfirm] = useState(false)
+  const headerMenuRef = useRef(null)
   const bottomRef = useRef(null)
   const markedRead = useRef(new Set()) // track emitted mark_read to avoid duplicates
 
@@ -110,17 +113,18 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
 
     const onMessageDeleted = ({ messageId }) => {
       setMessages((prev) =>
-        prev.map((m) =>
-          String(m._id) === messageId ? { ...m, deleted: true } : m
-        )
+        prev.map((m) => String(m._id) === messageId ? { ...m, deleted: true } : m)
       )
     }
+
+    const onChatCleared = () => setMessages([])
 
     socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, onMessage)
     socket.on(SOCKET_EVENTS.USER_TYPING, onTyping)
     socket.on(SOCKET_EVENTS.USER_STOP_TYPING, onStopTyping)
     socket.on(SOCKET_EVENTS.MESSAGE_READ, onMessageRead)
     socket.on(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
+    socket.on(SOCKET_EVENTS.CHAT_CLEARED, onChatCleared)
 
     return () => {
       if (targetType === 'room') socket.emit(SOCKET_EVENTS.LEAVE_ROOM, { roomId })
@@ -129,6 +133,7 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
       socket.off(SOCKET_EVENTS.USER_STOP_TYPING, onStopTyping)
       socket.off(SOCKET_EVENTS.MESSAGE_READ, onMessageRead)
       socket.off(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
+      socket.off(SOCKET_EVENTS.CHAT_CLEARED, onChatCleared)
     }
   }, [socket, roomId, targetType, myId, notify])
 
@@ -175,6 +180,33 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
   const handleDelete = useCallback((messageId) => {
     socket?.emit(SOCKET_EVENTS.DELETE_MESSAGE, { messageId })
   }, [socket])
+
+  const handleClearChat = useCallback(() => {
+    if (!clearConfirm) {
+      setClearConfirm(true)
+      return
+    }
+    socket?.emit(SOCKET_EVENTS.CLEAR_CHAT, { targetId: roomId, targetType })
+    setHeaderMenuOpen(false)
+    setClearConfirm(false)
+  }, [socket, roomId, targetType, clearConfirm])
+
+  // Close header menu on outside click
+  useEffect(() => {
+    if (!headerMenuOpen) return
+    function handleOutside(e) {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(e.target)) {
+        setHeaderMenuOpen(false)
+        setClearConfirm(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    document.addEventListener('touchstart', handleOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('touchstart', handleOutside)
+    }
+  }, [headerMenuOpen])
 
   // ── Derived header values ────────────────────────────────
   const otherParticipant = targetType === 'conversation'
@@ -264,6 +296,39 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
             </div>
           </>
         )}
+
+        {/* ── Header ⋮ menu ── */}
+        <div className="relative flex-shrink-0 ml-auto" ref={headerMenuRef}>
+          <button
+            onClick={() => { setHeaderMenuOpen((v) => !v); setClearConfirm(false) }}
+            aria-label="Chat options"
+            className="p-2 rounded-lg transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
+            </svg>
+          </button>
+
+          {headerMenuOpen && (
+            <div
+              className="absolute right-0 top-full mt-1 z-50 rounded-xl shadow-lg py-1 min-w-[150px]"
+              style={{ background: 'var(--color-surface-1)', border: '1px solid var(--color-border)' }}
+            >
+              <button
+                onClick={handleClearChat}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left transition-opacity hover:opacity-70"
+                style={{ color: clearConfirm ? '#ef4444' : '#ef4444' }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {clearConfirm ? 'Tap again to confirm' : 'Clear Chat'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Messages ── */}
