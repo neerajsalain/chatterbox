@@ -16,6 +16,10 @@ export const SOCKET_EVENTS = {
   MESSAGE_DELETED: 'message_deleted',
   CLEAR_CHAT: 'clear_chat',
   CHAT_CLEARED: 'chat_cleared',
+  EDIT_MESSAGE: 'edit_message',
+  MESSAGE_EDITED: 'message_edited',
+  REACT_MESSAGE: 'react_message',
+  MESSAGE_REACTION: 'message_reaction',
 }
 
 export const MESSAGE_TYPES = { TEXT: 'text', IMAGE: 'image', FILE: 'file' }

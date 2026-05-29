@@ -112,6 +112,64 @@ function registerChatEvents(io, socket) {
     }
   })
 
+  // ── Edit message ──────────────────────────────────────────────────────────
+  socket.on('edit_message', async ({ messageId, content }) => {
+    if (!messageId || !isValidId(messageId)) return socket.emit('error', { message: 'Invalid message ID' })
+    if (!content || !content.trim()) return socket.emit('error', { message: 'Content cannot be empty' })
+    if (content.trim().length > 2000) return socket.emit('error', { message: 'Message too long' })
+    try {
+      await connectDB()
+      const msg = await Message.findById(messageId).select('sender room conversation deleted')
+      if (!msg) return socket.emit('error', { message: 'Message not found' })
+      if (msg.deleted) return socket.emit('error', { message: 'Cannot edit a deleted message' })
+      if (msg.sender.toString() !== socket.userId) return socket.emit('error', { message: 'You can only edit your own messages' })
+
+      const updated = await Message.findByIdAndUpdate(
+        messageId,
+        { content: content.trim(), edited: true, editedAt: new Date() },
+        { new: true }
+      )
+      const channel = msg.room ? `room:${msg.room}` : `conv:${msg.conversation}`
+      io.to(channel).emit('message_edited', { messageId, content: updated.content, editedAt: updated.editedAt })
+    } catch (err) {
+      console.error('edit_message error:', err.message)
+      socket.emit('error', { message: 'Failed to edit message' })
+    }
+  })
+
+  // ── React to message ───────────────────────────────────────────────────────
+  socket.on('react_message', async ({ messageId, emoji }) => {
+    if (!messageId || !isValidId(messageId) || !emoji) return socket.emit('error', { message: 'Invalid payload' })
+    try {
+      await connectDB()
+      const msg = await Message.findById(messageId).select('room conversation reactions deleted')
+      if (!msg || msg.deleted) return
+
+      const userId = socket.userId
+      const existing = msg.reactions.find(r => r.emoji === emoji)
+
+      if (existing) {
+        const alreadyReacted = existing.users.some(u => u.toString() === userId)
+        if (alreadyReacted) {
+          // Toggle off
+          existing.users = existing.users.filter(u => u.toString() !== userId)
+          if (existing.users.length === 0) msg.reactions = msg.reactions.filter(r => r.emoji !== emoji)
+        } else {
+          existing.users.push(userId)
+        }
+      } else {
+        msg.reactions.push({ emoji, users: [userId] })
+      }
+
+      await msg.save()
+      const channel = msg.room ? `room:${msg.room}` : `conv:${msg.conversation}`
+      io.to(channel).emit('message_reaction', { messageId, reactions: msg.reactions })
+    } catch (err) {
+      console.error('react_message error:', err.message)
+      socket.emit('error', { message: 'Failed to react' })
+    }
+  })
+
   // ── Clear chat ────────────────────────────────────────────────────────────
   socket.on('clear_chat', async ({ targetId, targetType }) => {
     if (!targetId || !isValidId(targetId)) {

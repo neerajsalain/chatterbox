@@ -119,12 +119,26 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
 
     const onChatCleared = () => setMessages([])
 
+    const onMessageEdited = ({ messageId, content, editedAt }) => {
+      setMessages(prev => prev.map(m =>
+        String(m._id) === messageId ? { ...m, content, edited: true, editedAt } : m
+      ))
+    }
+
+    const onMessageReaction = ({ messageId, reactions }) => {
+      setMessages(prev => prev.map(m =>
+        String(m._id) === messageId ? { ...m, reactions } : m
+      ))
+    }
+
     socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, onMessage)
     socket.on(SOCKET_EVENTS.USER_TYPING, onTyping)
     socket.on(SOCKET_EVENTS.USER_STOP_TYPING, onStopTyping)
     socket.on(SOCKET_EVENTS.MESSAGE_READ, onMessageRead)
     socket.on(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
     socket.on(SOCKET_EVENTS.CHAT_CLEARED, onChatCleared)
+    socket.on(SOCKET_EVENTS.MESSAGE_EDITED, onMessageEdited)
+    socket.on(SOCKET_EVENTS.MESSAGE_REACTION, onMessageReaction)
 
     return () => {
       if (targetType === 'room') socket.emit(SOCKET_EVENTS.LEAVE_ROOM, { roomId })
@@ -134,6 +148,8 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
       socket.off(SOCKET_EVENTS.MESSAGE_READ, onMessageRead)
       socket.off(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
       socket.off(SOCKET_EVENTS.CHAT_CLEARED, onChatCleared)
+      socket.off(SOCKET_EVENTS.MESSAGE_EDITED, onMessageEdited)
+      socket.off(SOCKET_EVENTS.MESSAGE_REACTION, onMessageReaction)
     }
   }, [socket, roomId, targetType, myId, notify])
 
@@ -179,6 +195,14 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
 
   const handleDelete = useCallback((messageId) => {
     socket?.emit(SOCKET_EVENTS.DELETE_MESSAGE, { messageId })
+  }, [socket])
+
+  const handleEdit = useCallback((messageId, content) => {
+    socket?.emit(SOCKET_EVENTS.EDIT_MESSAGE, { messageId, content })
+  }, [socket])
+
+  const handleReact = useCallback((messageId, emoji) => {
+    socket?.emit(SOCKET_EVENTS.REACT_MESSAGE, { messageId, emoji })
   }, [socket])
 
   const handleClearChat = useCallback(() => {
@@ -352,6 +376,8 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
               showAvatar={showAvatar}
               myId={myId}
               onDelete={handleDelete}
+              onEdit={handleEdit}
+              onReact={handleReact}
             />
           )
         })}
