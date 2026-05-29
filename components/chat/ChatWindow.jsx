@@ -108,10 +108,19 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
       )
     }
 
+    const onMessageDeleted = ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          String(m._id) === messageId ? { ...m, deleted: true } : m
+        )
+      )
+    }
+
     socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, onMessage)
     socket.on(SOCKET_EVENTS.USER_TYPING, onTyping)
     socket.on(SOCKET_EVENTS.USER_STOP_TYPING, onStopTyping)
     socket.on(SOCKET_EVENTS.MESSAGE_READ, onMessageRead)
+    socket.on(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
 
     return () => {
       if (targetType === 'room') socket.emit(SOCKET_EVENTS.LEAVE_ROOM, { roomId })
@@ -119,6 +128,7 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
       socket.off(SOCKET_EVENTS.USER_TYPING, onTyping)
       socket.off(SOCKET_EVENTS.USER_STOP_TYPING, onStopTyping)
       socket.off(SOCKET_EVENTS.MESSAGE_READ, onMessageRead)
+      socket.off(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
     }
   }, [socket, roomId, targetType, myId, notify])
 
@@ -161,6 +171,10 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
       { targetId: roomId }
     )
   }, [socket, roomId])
+
+  const handleDelete = useCallback((messageId) => {
+    socket?.emit(SOCKET_EVENTS.DELETE_MESSAGE, { messageId })
+  }, [socket])
 
   // ── Derived header values ────────────────────────────────
   const otherParticipant = targetType === 'conversation'
@@ -272,6 +286,7 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
               isOwn={getSenderId(msg) === myId}
               showAvatar={showAvatar}
               myId={myId}
+              onDelete={handleDelete}
             />
           )
         })}

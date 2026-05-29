@@ -88,6 +88,30 @@ function registerChatEvents(io, socket) {
     }
   })
 
+  // ── Delete message ────────────────────────────────────────────────────────
+  socket.on('delete_message', async ({ messageId }) => {
+    if (!messageId || !isValidId(messageId)) {
+      return socket.emit('error', { message: 'Invalid message ID' })
+    }
+    try {
+      await connectDB()
+      const msg = await Message.findById(messageId).select('sender room conversation deleted')
+      if (!msg) return socket.emit('error', { message: 'Message not found' })
+      if (msg.sender.toString() !== socket.userId) {
+        return socket.emit('error', { message: 'You can only delete your own messages' })
+      }
+      if (msg.deleted) return // already deleted — no-op
+
+      await Message.findByIdAndUpdate(messageId, { deleted: true, deletedAt: new Date() })
+
+      const channel = msg.room ? `room:${msg.room}` : `conv:${msg.conversation}`
+      io.to(channel).emit('message_deleted', { messageId })
+    } catch (err) {
+      console.error('delete_message error:', err.message)
+      socket.emit('error', { message: 'Failed to delete message' })
+    }
+  })
+
   // ── Mark read ──────────────────────────────────────────────────────────────
   socket.on('mark_read', async ({ messageId }) => {
     if (!messageId || !isValidId(messageId)) return

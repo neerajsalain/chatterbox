@@ -12,6 +12,8 @@ export const SOCKET_EVENTS = {
   USER_OFFLINE: 'user_offline',
   MARK_READ: 'mark_read',
   MESSAGE_READ: 'message_read',
+  DELETE_MESSAGE: 'delete_message',
+  MESSAGE_DELETED: 'message_deleted',
 }
 
 export const MESSAGE_TYPES = { TEXT: 'text', IMAGE: 'image', FILE: 'file' }
