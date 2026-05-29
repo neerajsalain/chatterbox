@@ -31,7 +31,7 @@ export default function NewDMModal({ onClose, onConversationCreated }) {
       onClose()
       router.push(`/chat/dm/${data._id}`)
     } catch (err) {
-      toast.error(err.response?.data?.error ?? 'Failed to start conversation')
+      toast.error(err.response?.data?.error ?? err.message ?? 'Failed to start conversation')
     } finally {
       setStarting(null)
     }

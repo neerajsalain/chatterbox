@@ -16,6 +16,10 @@ export function SocketProvider({ children }) {
     const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin, {
       auth: { userId: session.user.id },
       transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     })
 
     s.on('connect_error', (err) => console.error('Socket error:', err.message))
