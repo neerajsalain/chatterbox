@@ -9,7 +9,7 @@ function ReadReceipt({ readBy, myId }) {
   const readByOthers = readBy?.filter((id) => String(id) !== myId) ?? []
   const isRead = readByOthers.length > 0
   return (
-    <span className="inline-flex items-center gap-0" aria-label={isRead ? 'Read' : 'Sent'}>
+    <span className="inline-flex items-center" aria-label={isRead ? 'Read' : 'Sent'}>
       <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
         <path d="M1 5l3 3 7-7" stroke={isRead ? 'var(--color-read)' : 'var(--color-sent)'}
               strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -33,8 +33,7 @@ function FileCard({ url, fileName, isOwn }) {
            style={{ flexShrink: 0, color: isOwn ? 'rgba(255,255,255,0.85)' : 'var(--color-text-muted)' }}>
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
               stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2"
-                  strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <span className="text-sm truncate" style={{ color: isOwn ? 'white' : 'var(--color-text)', maxWidth: 180 }}>
         {fileName || 'Download file'}
@@ -43,74 +42,69 @@ function FileCard({ url, fileName, isOwn }) {
   )
 }
 
-// ── Message action menu (⋮) ───────────────────────────────
-function MessageMenu({ onDelete, isOwn }) {
+// ── ⋮ message menu ────────────────────────────────────────
+function MessageMenu({ onDelete }) {
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
-  const menuRef = useRef(null)
+  const ref = useRef(null)
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return
-    function handleOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    function onOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) {
         setOpen(false)
         setConfirming(false)
       }
     }
-    document.addEventListener('mousedown', handleOutside)
-    document.addEventListener('touchstart', handleOutside)
+    document.addEventListener('mousedown', onOutside)
+    document.addEventListener('touchstart', onOutside)
     return () => {
-      document.removeEventListener('mousedown', handleOutside)
-      document.removeEventListener('touchstart', handleOutside)
+      document.removeEventListener('mousedown', onOutside)
+      document.removeEventListener('touchstart', onOutside)
     }
   }, [open])
 
-  function handleDelete() {
-    if (!confirming) {
-      setConfirming(true)
-      return
-    }
+  function handleDeleteClick() {
+    if (!confirming) { setConfirming(true); return }
     onDelete()
     setOpen(false)
     setConfirming(false)
   }
 
   return (
-    <div className="relative flex-shrink-0 self-center" ref={menuRef}>
-      {/* ⋮ trigger — always visible on mobile, hover-only on desktop */}
+    <div className="relative self-center flex-shrink-0" ref={ref}>
+      {/* Always-visible ⋮ trigger */}
       <button
-        onClick={() => { setOpen((v) => !v); setConfirming(false) }}
+        onClick={() => { setOpen(v => !v); setConfirming(false) }}
         aria-label="Message options"
-        className={[
-          'p-1.5 rounded-full transition-all',
-          'opacity-100 md:opacity-0 md:group-hover:opacity-100',
-          open ? 'opacity-100' : '',
-        ].join(' ')}
-        style={{ color: 'var(--color-text-subtle)', background: open ? 'var(--color-surface-2)' : 'transparent' }}
+        className="flex items-center justify-center w-6 h-6 rounded-full transition-colors"
+        style={{
+          color: 'var(--color-text-subtle)',
+          background: open ? 'var(--color-surface-2)' : 'transparent',
+        }}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="12" cy="5" r="1.8" />
+          <circle cx="12" cy="12" r="1.8" />
+          <circle cx="12" cy="19" r="1.8" />
         </svg>
       </button>
 
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute z-50 rounded-xl shadow-lg py-1 min-w-[130px]"
+          className="absolute right-0 z-50 rounded-xl shadow-lg py-1 min-w-[150px]"
           style={{
             background: 'var(--color-surface-1)',
             border: '1px solid var(--color-border)',
-            // Align right for own messages, left for received
-            ...(isOwn ? { right: 0 } : { left: 0 }),
-            bottom: '100%',
-            marginBottom: 4,
+            bottom: '110%',
+            marginBottom: 2,
           }}
         >
           <button
-            onClick={handleDelete}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors hover:opacity-80"
-            style={{ color: confirming ? '#ef4444' : '#ef4444' }}
+            onClick={handleDeleteClick}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left transition-opacity hover:opacity-70"
+            style={{ color: '#ef4444' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <polyline points="3 6 5 6 21 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -118,7 +112,7 @@ function MessageMenu({ onDelete, isOwn }) {
               <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            {confirming ? 'Tap to confirm' : 'Delete'}
+            {confirming ? 'Tap to confirm' : 'Delete message'}
           </button>
         </div>
       )}
@@ -151,15 +145,13 @@ export default function MessageBubble({ message, isOwn, showAvatar, myId, onDele
 
   if (deleted) return <DeletedBubble isOwn={isOwn} />
 
-  const menu = onDelete
-    ? <MessageMenu onDelete={() => onDelete(String(message._id))} isOwn={isOwn} />
-    : null
-
   if (isOwn) {
     return (
-      <div className="flex justify-end items-end gap-1 mb-1 group">
-        {/* Menu sits to the left of own bubble */}
-        {menu}
+      <div className="flex justify-end items-end gap-1.5 mb-1">
+        {/* ⋮ menu always visible to the left of own bubble */}
+        {onDelete && (
+          <MessageMenu onDelete={() => onDelete(String(message._id))} />
+        )}
 
         <div className="max-w-[70%]">
           {type === 'image' ? (
@@ -175,7 +167,7 @@ export default function MessageBubble({ message, isOwn, showAvatar, myId, onDele
               {content}
             </div>
           )}
-          <div className="flex items-center justify-end gap-1 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center justify-end gap-1 mt-0.5">
             <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>
               {formatMessageTime(createdAt)}
             </span>
@@ -186,8 +178,9 @@ export default function MessageBubble({ message, isOwn, showAvatar, myId, onDele
     )
   }
 
+  // Received message — no delete option
   return (
-    <div className="flex items-end gap-2 mb-1 group">
+    <div className="flex items-end gap-2 mb-1">
       <div className="w-7 h-7 flex-shrink-0 self-end">
         {showAvatar && <Avatar src={sender?.image} name={sender?.name} size={28} />}
       </div>
@@ -210,8 +203,7 @@ export default function MessageBubble({ message, isOwn, showAvatar, myId, onDele
             {content}
           </div>
         )}
-        <p className="text-xs mt-0.5 pl-1 opacity-0 group-hover:opacity-100 transition-opacity"
-           style={{ color: 'var(--color-text-subtle)' }}>
+        <p className="text-xs mt-0.5 pl-1" style={{ color: 'var(--color-text-subtle)' }}>
           {formatMessageTime(createdAt)}
         </p>
       </div>
