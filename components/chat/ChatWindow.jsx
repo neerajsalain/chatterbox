@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import axios from 'axios'
 import { useSocket } from '@/context/SocketContext'
 import { usePresenceContext } from '@/context/PresenceContext'
+import { useMobileNav } from '@/components/chat/ChatShell'
 import { useNotifications } from '@/hooks/useNotifications'
 import MessageBubble from './MessageBubble'
 import MessageInput from './MessageInput'
@@ -20,9 +21,11 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
   const socket = useSocket()
   const { isOnline } = usePresenceContext()
   const { notify } = useNotifications()
+  const { openSidebar } = useMobileNav()
 
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [headerInfo, setHeaderInfo] = useState(null)
   const [typingUsers, setTypingUsers] = useState([])
   const bottomRef = useRef(null)
@@ -34,6 +37,7 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
   useEffect(() => {
     if (!roomId) return
     setLoading(true)
+    setLoadError(false)
     setMessages([])
     setTypingUsers([])
     setHeaderInfo(null)
@@ -50,9 +54,12 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
     Promise.all([axios.get(headerUrl), axios.get(historyUrl)])
       .then(([h, m]) => {
         setHeaderInfo(h.data)
-        setMessages([...m.data.messages].reverse())
+        setMessages([...(m.data?.messages ?? [])].reverse())
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error('Failed to load chat:', err)
+        setLoadError(true)
+      })
       .finally(() => setLoading(false))
   }, [roomId, targetType])
 
@@ -176,6 +183,16 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
     )
   }
 
+  if (loadError) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-sm" style={{ color: 'var(--color-danger, #ef4444)' }}>
+          Failed to load. Please refresh and try again.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* ── Header ── */}
@@ -187,6 +204,18 @@ export default function ChatWindow({ roomId, targetType = 'room' }) {
           background: 'var(--color-surface-1)',
         }}
       >
+        {/* Back button — mobile only */}
+        <button
+          onClick={openSidebar}
+          className="md:hidden flex-shrink-0 p-1.5 rounded-lg hover:opacity-70 transition-opacity mr-1"
+          style={{ color: 'var(--color-text-muted)' }}
+          aria-label="Back to sidebar"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
         {targetType === 'room' ? (
           <>
             <span className="text-xl font-light" style={{ color: 'var(--color-text-muted)' }}>#</span>

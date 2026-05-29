@@ -10,7 +10,7 @@ import CreateRoomModal from './CreateRoomModal'
 import NewDMModal from './NewDMModal'
 import { useTheme } from '@/hooks/useTheme'
 
-export default function Sidebar({ user }) {
+export default function Sidebar({ user, onNavigate }) {
   const { isDark, toggleTheme } = useTheme()
   const [rooms, setRooms] = useState([])
   const [conversations, setConversations] = useState([])
@@ -88,7 +88,7 @@ export default function Sidebar({ user }) {
                 +
               </button>
             </div>
-            <RoomList rooms={rooms} loading={roomsLoading} />
+            <RoomList rooms={rooms} loading={roomsLoading} onNavigate={onNavigate} />
           </section>
 
           {/* Divider */}
@@ -113,7 +113,7 @@ export default function Sidebar({ user }) {
                 +
               </button>
             </div>
-            <DMList conversations={conversations} loading={dmsLoading} />
+            <DMList conversations={conversations} loading={dmsLoading} onNavigate={onNavigate} />
           </section>
 
         </div>
@@ -179,7 +179,7 @@ export default function Sidebar({ user }) {
       {showNewDM && (
         <NewDMModal
           onClose={() => setShowNewDM(false)}
-          onConversationCreated={handleConversationCreated}
+          onConversationCreated={(conv) => { handleConversationCreated(conv); onNavigate?.() }}
         />
       )}
     </>

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 
-export default function RoomList({ rooms, loading }) {
+export default function RoomList({ rooms, loading, onNavigate }) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -37,7 +37,7 @@ export default function RoomList({ rooms, loading }) {
         return (
           <li key={room._id}>
             <button
-              onClick={() => router.push(href)}
+              onClick={() => { router.push(href); onNavigate?.() }}
               className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left text-sm transition-colors"
               style={{
                 background: isActive ? 'var(--color-surface-2)' : 'transparent',

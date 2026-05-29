@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import Avatar from '@/components/shared/Avatar'
 import { usePresenceContext } from '@/context/PresenceContext'
 
-export default function DMList({ conversations, loading }) {
+export default function DMList({ conversations, loading, onNavigate }) {
   const router = useRouter()
   const pathname = usePathname()
   const { data: session } = useSession()
@@ -46,7 +46,7 @@ export default function DMList({ conversations, loading }) {
         return (
           <li key={conv._id}>
             <button
-              onClick={() => router.push(href)}
+              onClick={() => { router.push(href); onNavigate?.() }}
               className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left text-sm transition-colors"
               style={{
                 background: isActive ? 'var(--color-surface-2)' : 'transparent',
